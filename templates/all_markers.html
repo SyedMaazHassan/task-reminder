@@ -1,0 +1,30 @@
+{% load static %}
+{% include 'inc/head.inc.html' %}
+{% include 'inc/navbar.inc.html' %}
+{% load bootstrap4 %}
+<body>
+    <div class="row mx-auto my-3" style="width: 100%!important;">
+        {% for item in qs %}
+        <div class="col-sm-6 my-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {{ item.service_type.system_name }}
+                    </h5>
+                    <div class="card-text row">
+                        <p class="col-lg-6">Installation date: <b>{{ item.installation_date }}</b></p>
+                        <p class="col-lg-6">Service date: <b>{{ item.next_service_date }}</b></p>
+                        <p class="col-lg-6">Customer Name: <b>{{ item.service_type.customer.name }}</b></p>
+                        <p class="col-lg-6">Customer Email: <b>{{ item.service_type.customer.email }}</b></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+
+</body>
+
+
+</html>
