@@ -11,10 +11,10 @@ class CustomerForm(forms.ModelForm):
 class ServiceTypeForm(forms.ModelForm):
     class Meta:
         model = Service_type
-        exclude = ['customer','system_name' ]
+        exclude = ['customer','pin_color' ]
 
 
 class GeoInfoForm(forms.ModelForm):
     class Meta:
         model = Geoinfo
-        exclude = ['service_type', ]
+        exclude = ['service_type', 'customer']

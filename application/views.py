@@ -89,16 +89,21 @@ def logout(request):
     return redirect("index")
 
 
+# form to make a service reminder
+
 def formsview(request, **kwargs):
     ctx = {'userform': CustomerForm, 'service_type': ServiceTypeForm, 'geoInfo': GeoInfoForm}
     if request.method == 'POST':
-        print(request.POST)
         reminder = False
+
+        # checking if the reminder is true or not
         try:
             if request.POST['reminder'] == 'on':
                 reminder = True
         except:
             pass
+
+        # creating the customer object
         customer_info = CustomerInfo.objects.create(
             name=request.POST['name'],
             email=request.POST['email'],
@@ -106,26 +111,25 @@ def formsview(request, **kwargs):
             customer_address=request.POST['customer_address'],
             contact_person_email=request.POST['contact_person_email'],
             reminder_email=request.POST['reminder_email']
-            )
-        service_type = Service_type.objects.create(
-            customer=customer_info,
-            pin_color=request.POST['pin_color'],
-            system_name=request.POST['pin_color']
         )
+
+        # getting the service type
+        service_type = Service_type.objects.get(system_name=request.POST['system_name'])
+
+        # creating the reminder and geoinfo object based on the previous instances
         geo_info = Geoinfo.objects.create(
             service_type=service_type,
             installation_date=request.POST['installation_date'],
             next_service_date=request.POST['next_service_date'],
             service_installation_place=request.POST['service_installation_place'],
-            reminder=reminder
+            reminder=reminder,
+            customer=customer_info
         )
         return redirect('main-view')
 
     return render(request, 'main.html', ctx)
 
-
+# displaying reminders in card form
 def mainview(request):
     qs = Geoinfo.objects.filter(reminder=True)
-    print(qs[0].reminder)
-    return render(request,'all_markers.html',{'qs':qs})
-
+    return render(request, 'all_markers.html', {'qs': qs})

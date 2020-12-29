@@ -3,7 +3,10 @@
 {% include 'inc/navbar.inc.html' %}
 {% load bootstrap4 %}
 <body>
+    {#  activating grid  #}
     <div class="row mx-auto my-3" style="width: 100%!important;">
+
+        {#    looping through the queryset and making cards in grid system    #}
         {% for item in qs %}
         <div class="col-sm-6 my-3">
             <div class="card">
@@ -14,8 +17,8 @@
                     <div class="card-text row">
                         <p class="col-lg-6">Installation date: <b>{{ item.installation_date }}</b></p>
                         <p class="col-lg-6">Service date: <b>{{ item.next_service_date }}</b></p>
-                        <p class="col-lg-6">Customer Name: <b>{{ item.service_type.customer.name }}</b></p>
-                        <p class="col-lg-6">Customer Email: <b>{{ item.service_type.customer.email }}</b></p>
+                        <p class="col-lg-6">Customer Name: <b>{{ item.customer.name }}</b></p>
+                        <p class="col-lg-6">Customer Email: <b>{{ item.customer.email }}</b></p>
                     </div>
                 </div>
             </div>
