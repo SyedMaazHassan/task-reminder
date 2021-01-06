@@ -1,6 +1,8 @@
 <div class="bg-info" style="height: 70px;">
     <div class="container pt-3">
-        <i class="material-icons mb-3 float-left text-info bg-white mr-3" style="border-radius: 100%; padding:5px; font-size:30px; cursor: pointer;" title="Go back" onclick="window.history.back()">keyboard_arrow_left</i>
+        <a href="{% url 'index' %}">
+            <i class="material-icons mb-3 float-left text-info bg-white mr-3" style="border-radius: 100%; padding:5px; font-size:30px; cursor: pointer;" title="Go to home">home</i>
+        </a>
         {% if user.is_authenticated %}        
         <div class="float-left mt-1 text-white">
             <h4>Hi {{user.first_name}}</h4>

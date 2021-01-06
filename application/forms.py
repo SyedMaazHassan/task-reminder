@@ -14,7 +14,7 @@ class ServiceTypeForm(forms.ModelForm):
         exclude = ['customer','pin_color' ]
 
 
-class GeoInfoForm(forms.ModelForm):
+class ReminderForm(forms.ModelForm):
     class Meta:
-        model = Geoinfo
-        exclude = ['service_type', 'customer']
+        model = reminder
+        exclude = ['service_type', 'customer', 'service_installation_place', 'reminder_email', 'is_remind', 'added_by']

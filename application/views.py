@@ -6,14 +6,44 @@ from django.http import JsonResponse
 import json
 from .forms import *
 from django.core.serializers import serialize
+from django.template.loader import render_to_string
+from django.template import RequestContext
+
 
 
 # main page function
 
 def index(request):
+    context = {}
     if not request.user.is_authenticated:
         return redirect("login")
-    return redirect('index')
+
+    context['allreminders'] = reminder.objects.filter(added_by = request.user).order_by("-id")
+    temp = []
+
+    for i in context['allreminders']:
+        temp_dict = {
+            "type": 'Feature',
+            "geometry": {
+                "type": 'Point',
+                "coordinates": [i.service_installation_place.lang, i.service_installation_place.lat]
+            },
+            "properties": {
+                "id": i.id,
+                # "title": '{{place.place_name}}',
+                # "description": '{{place.place_description}}',
+                # "image": '{{place.place_image}}',
+                # "type": '{{place.place_type}}'
+            }
+        }
+
+        temp.append(temp_dict)
+
+    context['json_data'] = json.dumps(temp)
+
+    # return render(request, "abc.html", context)
+    return render(request, "all_markers.html", context)
+
 
 
 # function for signup
@@ -89,47 +119,69 @@ def logout(request):
     return redirect("index")
 
 
-# form to make a service reminder
-
 def formsview(request, **kwargs):
-    ctx = {'userform': CustomerForm, 'service_type': ServiceTypeForm, 'geoInfo': GeoInfoForm}
+    if not request.user.is_authenticated:
+        return redirect("index")
+
+    ctx = {
+        'userform': CustomerForm, 
+        'service_type': ServiceTypeForm, 
+        'reminderform': ReminderForm,
+        'services': Service_type.objects.all()
+    }
+
+
     if request.method == 'POST':
-        reminder = False
 
-        # checking if the reminder is true or not
-        try:
-            if request.POST['reminder'] == 'on':
-                reminder = True
-        except:
-            pass
+        service_id = request.POST['selected_type'].split("-")[0]
+        
+        # type object of the system selected by the user
+        selected_type = Service_type.objects.get(id = int(service_id)) #selected service
+        
+        # initializing service place as empty
+        service_installation_place = ""
 
-        # creating the customer object
+        # checking if user selected any place
+        if 'is_place' in request.POST and request.POST['is_place'] == "on":
+            latitude = request.POST['lat']
+            langitude = request.POST['lang']
+
+            # adding place in database
+            # overwrite the "service_installation_place" variable
+            service_installation_place = place.objects.create(lat = latitude, lang = langitude)
+
+        # creating separate object of the user and save in database
         customer_info = CustomerInfo.objects.create(
-            name=request.POST['name'],
-            email=request.POST['email'],
-            organization_number=request.POST['organization_number'],
-            customer_address=request.POST['customer_address'],
-            contact_person_email=request.POST['contact_person_email'],
-            reminder_email=request.POST['reminder_email']
+            customer_name = request.POST['customer_name'],
+            customer_email = request.POST['customer_email'],
+            customer_address = request.POST['customer_address'],
+            organization_number = request.POST['organization_number'],
+            qr_code = request.POST['qr_code']
+        ) 
+
+        # checking if user wants to be reminded
+        is_remind = request.POST['allEmails'] != ""
+
+        # creating reminder object from the given information
+        new_reminder = reminder.objects.create(
+            installation_date = request.POST['installation_date'],
+            next_service_date = request.POST['next_service_date'],
+            service_installation_place = service_installation_place,
+            service_type = selected_type,
+            is_remind = is_remind,
+            customer = customer_info,
+            reminder_email = request.POST['allEmails'],
+            added_by = request.user
         )
 
-        # getting the service type
-        service_type = Service_type.objects.get(system_name=request.POST['system_name'])
-
-        # creating the reminder and geoinfo object based on the previous instances
-        geo_info = Geoinfo.objects.create(
-            service_type=service_type,
-            installation_date=request.POST['installation_date'],
-            next_service_date=request.POST['next_service_date'],
-            service_installation_place=request.POST['service_installation_place'],
-            reminder=reminder,
-            customer=customer_info
-        )
-        return redirect('main-view')
+        return redirect('index')
 
     return render(request, 'main.html', ctx)
+    # html = render_to_string('main.html', ctx, RequestContext(request))
+    # return JsonResponse(html)
 
-# displaying reminders in card form
-def mainview(request):
-    qs = Geoinfo.objects.filter(reminder=True)
-    return render(request, 'all_markers.html', {'qs': qs})
+# def mainview(request):
+#     # qs = Geoinfo.objects.filter(reminder=True)
+#     # print(qs[0].reminder)
+#     return render(request,'all_markers.html')
+
